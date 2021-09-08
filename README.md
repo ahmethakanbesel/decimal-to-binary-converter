@@ -1,7 +1,7 @@
 # Decimal to Binary Converter
 It converts integers or floating point numbers to binary. You can change number of exponent and mantissa bits.
 Also, it generates hex value of binary.
-Click [here](https://ahmethakanbesel.github.io/decimal-to-binary-converter) for live preview.
+Click [here](https://decimal2binary-converter.vercel.app/) for live preview.
 
 ## Preview
 ![Preview GIF](preview.gif?raw=true "Preview")
