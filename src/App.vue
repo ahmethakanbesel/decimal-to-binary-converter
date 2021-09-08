@@ -70,6 +70,7 @@
                                     id="binary"
                                     placeholder="Binary number will appear here"
                                     outlined
+                                    readonly
                             ></v-text-field>
                         </v-row>
                         <v-row>
@@ -80,6 +81,7 @@
                                     id="hex"
                                     placeholder="Hex number will appear here"
                                     outlined
+                                    readonly
                             ></v-text-field>
                         </v-row>
                         <v-row class="mt-0">
@@ -131,7 +133,7 @@
             calculate() {
                 this.copyText = 'Copy to clipboard'
                 if (!isNaN(this.number)) {
-                    let isFloatingPoint = this.isFloatingPoint(this.number)
+                    let isFloatingPoint = this.number.includes(',') | this.number.includes('.')
                     if (!isFloatingPoint) {
                         this.binaryArray = this.signedToBinary(this.number, this.integerBits)
                     } else {
@@ -204,9 +206,6 @@
                 }
                 return binary;
             },
-            isFloatingPoint(number) {
-                return !(number % 1 === 0);
-            },
             getFractionPart(number) {
                 if (number < 0) {
                     number *= -1
@@ -228,11 +227,15 @@
                 return binary
             },
             findE(integerBinary) {
+                if (integerBinary[0] === 0) {
+                    integerBinary.shift()
+                }
                 return integerBinary.length - 1
             },
-            createMantissa(E, fractionBits, integerBinary, fractionBinary, numOfIntBits) {
+            createMantissa(E, fractionBits, integerBinary, fractionBinary) {
                 let i = 0
                 let mantissa = []
+                const numOfIntBits = integerBinary.length
                 if (E < 0) {
                     for (let j = (E * -1); j < fractionBits; j++, i++) {
                         mantissa[i] = fractionBinary[j];
@@ -323,10 +326,9 @@
                 let integerBinary = this.unsignedToBinary(integerPart, integerBinaryBits)
                 let fractionBinary = this.fractionToBinary(fractionPart, this.mantissaBits + 4)
                 let E = this.findE(integerBinary)
-                let mantissa = this.createMantissa(E, this.mantissaBits, integerBinary, fractionBinary, integerBinaryBits)
-                console.log(mantissa)
+                let mantissa = this.createMantissa(E, this.mantissaBits, integerBinary, fractionBinary)
+                integerBinaryBits = integerBinary.length
                 this.roundFraction(this.mantissaBits + 2 + integerBinaryBits, mantissa, this.mantissaBits - integerBinaryBits, this.mantissaBits)
-                console.log(mantissa)
                 // Find how many times point will be floated. Examples:
                 // 111.0001 => 1.110001 E=2 | 0.01001 => 1.001 E=-2
                 // If E less than zero, we will start mantissa part from fractionBinary[-E]
@@ -336,15 +338,11 @@
                 let e = bias + E;
                 if (e === 0) {
                     E = 1 - bias;
-                    mantissa = this.createMantissa(E, this.mantissaBits, integerBinary, fractionBinary, integerBinaryBits);
+                    mantissa = this.createMantissa(E, this.mantissaBits, integerBinary, fractionBinary);
                     this.roundFraction(this.mantissaBits + 2 + integerBinaryBits, mantissa, this.mantissaBits - integerBinaryBits, this.mantissaBits);
                 }
-                console.log(e)
-                console.log(bias)
-                console.log(E)
                 // Create an array for exponent bits then convert exponent to base 2.
                 let exponentBinary = this.unsignedToBinary(e, this.exponentBits);
-                console.log(exponentBinary)
                 // First bit will be sign bit
                 binary[0] = signBit;
                 let i = 1;
